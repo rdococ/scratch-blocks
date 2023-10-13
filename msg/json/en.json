@@ -248,6 +248,7 @@
     "UNDO": "Undo",
     "REDO": "Redo",
     "EDIT_PROCEDURE": "Edit",
+    "MAKE_ARGUMENT_SETTER": "Obtain Setter",
     "SHOW_PROCEDURE_DEFINITION": "Go to definition",
     "WORKSPACE_COMMENT_DEFAULT_TEXT": "Say something...",
     "COLOUR_HUE_LABEL": "Color",

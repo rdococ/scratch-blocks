@@ -213,6 +213,25 @@ Blockly.ScratchBlocks.VerticalExtensions.PROCEDURE_CALL_CONTEXTMENU = {
   }
 };
 
+/**
+ * Mixin to add a context menu for an argument reporter block.
+ * It adds the "set" option.
+ * @mixin
+ * @augments Blockly.Block
+ * @package
+ * @readonly
+ */
+Blockly.ScratchBlocks.VerticalExtensions.ARG_REPORTER_CONTEXTMENU = {
+  /**
+   * Add the "set" option to the context menu.
+   * @param {!Array.<!Object>} menuOptions List of menu options to edit.
+   * @this Blockly.Block
+   */
+  customContextMenu: function(menuOptions) {
+    menuOptions.push(Blockly.Procedures.makeSetOption(this));
+  }
+};
+
 
 Blockly.ScratchBlocks.VerticalExtensions.SCRATCH_EXTENSION = function() {
   this.isScratchExtension = true;
@@ -257,6 +276,8 @@ Blockly.ScratchBlocks.VerticalExtensions.registerAll = function() {
       Blockly.ScratchBlocks.VerticalExtensions.PROCEDURE_DEF_CONTEXTMENU);
   Blockly.Extensions.registerMixin('procedure_call_contextmenu',
       Blockly.ScratchBlocks.VerticalExtensions.PROCEDURE_CALL_CONTEXTMENU);
+  Blockly.Extensions.registerMixin('arg_reporter_contextmenu',
+      Blockly.ScratchBlocks.VerticalExtensions.ARG_REPORTER_CONTEXTMENU);
 
   // Extension blocks have slightly different block rendering.
   Blockly.Extensions.register('scratch_extension',

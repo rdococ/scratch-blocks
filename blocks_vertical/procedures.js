@@ -851,8 +851,10 @@ Blockly.Blocks['procedures_prototype'] = {
   populateArgument_: Blockly.ScratchBlocks.ProcedureUtils.populateArgumentOnPrototype_,
   addProcedureLabel_: Blockly.ScratchBlocks.ProcedureUtils.addLabelField_,
 
-  // Only exists on procedures_prototype.
+  // Only exists on procedures_prototype and procedures_scriptvariable.
   createArgumentReporter_: Blockly.ScratchBlocks.ProcedureUtils.createArgumentReporter_,
+  
+  // Only exists on procedures_prototype.
   updateArgumentReporterNames_: Blockly.ScratchBlocks.ProcedureUtils.updateArgumentReporterNames_
 };
 
@@ -910,7 +912,7 @@ Blockly.Blocks['argument_reporter_boolean'] = {
           "text": ""
         }
       ],
-      "extensions": ["colours_more", "output_boolean"]
+      "extensions": ["colours_more", "output_boolean", "arg_reporter_contextmenu"]
     });
   }
 };
@@ -925,7 +927,56 @@ Blockly.Blocks['argument_reporter_string_number'] = {
           "text": ""
         }
       ],
-      "extensions": ["colours_more", "output_number", "output_string"]
+      "extensions": ["colours_more", "output_number", "output_string", "arg_reporter_contextmenu"]
+    });
+  }
+};
+
+Blockly.Blocks['procedures_scriptvariable'] = {
+  init: function() {
+    this.jsonInit({ "message0": "script variable %1",
+      "args0": [
+        {
+          "type": "input_value",
+          "name": "NAME"
+        }
+      ],
+      "extensions": ["colours_more", "shape_statement"]
+    });
+  },
+  // Shared.
+  /* removeAllInputs_: Blockly.ScratchBlocks.ProcedureUtils.removeAllInputs_,
+  disconnectOldBlocks_: Blockly.ScratchBlocks.ProcedureUtils.disconnectOldBlocks_,
+  deleteShadows_: Blockly.ScratchBlocks.ProcedureUtils.deleteShadows_,
+  createAllInputs_: Blockly.ScratchBlocks.ProcedureUtils.createAllInputs_,
+  updateDisplay_: Blockly.ScratchBlocks.ProcedureUtils.updateDisplay_, */
+
+  // Exist on all three blocks, but have different implementations.
+  /* mutationToDom: Blockly.ScratchBlocks.ProcedureUtils.definitionMutationToDom,
+  domToMutation: Blockly.ScratchBlocks.ProcedureUtils.definitionDomToMutation,
+  populateArgument_: Blockly.ScratchBlocks.ProcedureUtils.populateArgumentOnPrototype_,
+  addProcedureLabel_: Blockly.ScratchBlocks.ProcedureUtils.addLabelField_, */
+
+  // Only exists on procedures_prototype and procedures_scriptvariable.
+  createArgumentReporter_: Blockly.ScratchBlocks.ProcedureUtils.createArgumentReporter_
+};
+
+Blockly.Blocks['argument_setter'] = {
+  init: function() {
+    this.jsonInit({ "message0": "set %1 to %2",
+      "args0": [
+        {
+          "type": "field_label_serializable",
+          "name": "NAME",
+          "text": ""
+        },
+        {
+          "type": "input_value",
+          "name": "VALUE",
+          "text": "0"
+        }
+      ],
+      "extensions": ["colours_more", "shape_statement"]
     });
   }
 };

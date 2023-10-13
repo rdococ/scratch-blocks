@@ -254,6 +254,7 @@ Blockly.Msg["HELP"] = "Help";
 Blockly.Msg["UNDO"] = "Undo";
 Blockly.Msg["REDO"] = "Redo";
 Blockly.Msg["EDIT_PROCEDURE"] = "Edit";
+Blockly.Msg["MAKE_ARGUMENT_SETTER"] = "Obtain Setter";
 Blockly.Msg["SHOW_PROCEDURE_DEFINITION"] = "Go to definition";
 Blockly.Msg["WORKSPACE_COMMENT_DEFAULT_TEXT"] = "Say something...";
 Blockly.Msg["COLOUR_HUE_LABEL"] = "Color";

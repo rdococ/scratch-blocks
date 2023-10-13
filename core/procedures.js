@@ -222,7 +222,19 @@ Blockly.Procedures.flyoutCategory = function(workspace) {
   var xmlList = [];
 
   Blockly.Procedures.addCreateButton_(workspace, xmlList);
-
+  
+  var scriptvarText = '<xml>' + 
+    '<block type="procedures_scriptvariable">' +
+        '<value name="NAME">' +
+            '<shadow type="argument_reporter_string_number">' +
+                '<field name="VALUE"/>' +
+            '</shadow>' +
+        '</value>' +
+    '</block></xml>';
+  
+  var scriptvar = Blockly.Xml.textToDom(scriptvarText).firstChild;
+  xmlList.push(scriptvar);
+  
   // Create call blocks for each procedure defined in the workspace
   var mutations = Blockly.Procedures.allProcedureMutations(workspace);
   mutations = Blockly.Procedures.sortProcedureMutations_(mutations);
@@ -237,6 +249,7 @@ Blockly.Procedures.flyoutCategory = function(workspace) {
     block.appendChild(mutation);
     xmlList.push(block);
   }
+  
   return xmlList;
 };
 
@@ -474,6 +487,27 @@ Blockly.Procedures.editProcedureCallback_ = function(block) {
   );
 };
 
+Blockly.Procedures.makeArgumentSetter_ = function (block) {
+  var newDom = Blockly.Xml.blockToDom(block);
+  
+  var blockText = '<xml>' +
+    '<block type="argument_setter">' +
+        '<field name="NAME">' +
+            newDom.firstChild.innerHTML +
+        '</field>' +
+        
+        '<value name="VALUE">' +
+            '<shadow type="text">' +
+                '<field name="TEXT"></field>' +
+            '</shadow>' +
+        '</value>' +
+    '</block>' +
+    '</xml>';
+  
+  var newDom = Blockly.Xml.textToDom(blockText).firstChild;
+  var newBlock = Blockly.Xml.domToBlock(newDom, block.workspace);
+}
+
 /**
  * Callback factory for editing an existing custom procedure.
  * @param {!Blockly.Block} block The procedure prototype block being edited.
@@ -511,6 +545,24 @@ Blockly.Procedures.makeEditOption = function(block) {
     text: Blockly.Msg.EDIT_PROCEDURE,
     callback: function() {
       Blockly.Procedures.editProcedureCallback_(block);
+    }
+  };
+  return editOption;
+};
+
+/**
+ * Make a context menu option for obtaining an argument setter.
+ * This appears in the context menu for argument reporters.
+ * @param {!Blockly.BlockSvg} block The block where the right-click originated.
+ * @return {!Object} A menu option, containing text, enabled, and a callback.
+ * @package
+ */
+Blockly.Procedures.makeSetOption = function(block) {
+  var editOption = {
+    enabled: true,
+    text: Blockly.Msg.MAKE_ARGUMENT_SETTER,
+    callback: function() {
+      Blockly.Procedures.makeArgumentSetter_(block);
     }
   };
   return editOption;

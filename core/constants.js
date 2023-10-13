@@ -378,6 +378,12 @@ Blockly.PROCEDURES_PROTOTYPE_BLOCK_TYPE = 'procedures_prototype';
 Blockly.PROCEDURES_CALL_BLOCK_TYPE = 'procedures_call';
 
 /**
+ * The type of all script variable definition blocks.
+ * @const {string}
+ */
+Blockly.PROCEDURES_SCRIPTVAR_BLOCK_TYPE = 'procedures_scriptvariable';
+
+/**
  * ENUM for flyout status button states.
  * @const
  */

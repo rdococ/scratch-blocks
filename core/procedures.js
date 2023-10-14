@@ -255,10 +255,13 @@ Blockly.Procedures.flyoutCategory = function(workspace) {
   for (var i = 0; i < mutations.length; i++) {
     var mutation = mutations[i].cloneNode(false);
     var procCode = mutation.getAttribute('proccode');
-    if (Blockly.Procedures.procedureContainsReturn(procCode, workspace)) {
-      mutation.setAttribute('return', Blockly.PROCEDURES_CALL_TYPE_REPORTER);
+    var returnType = Blockly.Procedures.getProcedureReturnType(procCode, workspace);
+    if (returnType !== Blockly.PROCEDURES_CALL_TYPE_STATEMENT) {
+      mutation.setAttribute('return', returnType);
     }
-    
+    // <block type="procedures_call">
+    //   <mutation ...></mutation>
+    // </block>
     var block = goog.dom.createDom('block');
     block.setAttribute('type', 'procedures_call');
     block.setAttribute('gap', 16);

@@ -220,8 +220,6 @@ Blockly.Procedures.rename = function(name) {
  */
 Blockly.Procedures.flyoutCategory = function(workspace) {
   var xmlList = [];
-
-  Blockly.Procedures.addCreateButton_(workspace, xmlList);
   
   var scriptvarText = '<xml>' + 
     '<block type="procedures_scriptvariable">' +
@@ -235,14 +233,32 @@ Blockly.Procedures.flyoutCategory = function(workspace) {
   var scriptvar = Blockly.Xml.textToDom(scriptvarText).firstChild;
   xmlList.push(scriptvar);
   
+  var returnBlock = goog.dom.createDom('block');
+  returnBlock.setAttribute('type', Blockly.PROCEDURES_RETURN_BLOCK_TYPE);
+  returnBlock.setAttribute('gap', 16);
+  var returnBlockValue = goog.dom.createDom('value');
+  returnBlockValue.setAttribute('name', 'VALUE');
+  var returnBlockShadow = goog.dom.createDom('shadow');
+  returnBlockShadow.setAttribute('type', 'text');
+  var returnBlockField = goog.dom.createDom('field');
+  returnBlockField.setAttribute('name', 'TEXT');
+  returnBlockShadow.appendChild(returnBlockField);
+  returnBlockValue.appendChild(returnBlockShadow);
+  returnBlock.appendChild(returnBlockValue);
+  xmlList.push(returnBlock);
+
+  Blockly.Procedures.addCreateButton_(workspace, xmlList);
+  
   // Create call blocks for each procedure defined in the workspace
   var mutations = Blockly.Procedures.allProcedureMutations(workspace);
   mutations = Blockly.Procedures.sortProcedureMutations_(mutations);
   for (var i = 0; i < mutations.length; i++) {
-    var mutation = mutations[i];
-    // <block type="procedures_call">
-    //   <mutation ...></mutation>
-    // </block>
+    var mutation = mutations[i].cloneNode(false);
+    var procCode = mutation.getAttribute('proccode');
+    if (Blockly.Procedures.procedureContainsReturn(procCode, workspace)) {
+      mutation.setAttribute('return', Blockly.PROCEDURES_CALL_TYPE_REPORTER);
+    }
+    
     var block = goog.dom.createDom('block');
     block.setAttribute('type', 'procedures_call');
     block.setAttribute('gap', 16);
@@ -581,6 +597,20 @@ Blockly.Procedures.makeEditOption = function(block) {
   return editOption;
 };
 
+Blockly.Procedures.changeReturnType = function(block, returnType) {
+  block.unplug(true);
+  var workspace = block.workspace;
+  var xml = Blockly.Xml.blockToDom(block);
+  var xy = block.getRelativeToSurfaceXY();
+  block.dispose();
+
+  var mutation = xml.querySelector('mutation');
+  mutation.setAttribute('return', returnType);
+
+  var newBlock = Blockly.Xml.domToBlock(xml, workspace);
+  newBlock.moveBy(xy.x, xy.y);
+};
+
 /**
  * Make a context menu option for obtaining an argument setter.
  * This appears in the context menu for argument reporters.
@@ -674,4 +704,104 @@ Blockly.Procedures.deleteProcedureDefCallback = function(procCode,
   workspace.refreshToolboxSelection_();
 
   return true;
+};
+
+/**
+ * @param {string} procCode The procedure code
+ * @param {Blockly.Workspace} workspace The workspace
+ * @returns {boolean} True if the procedure contains a return block.
+ */
+Blockly.Procedures.procedureContainsReturn = function(procCode, workspace) {
+  var defineBlock = Blockly.Procedures.getDefineBlock(procCode, workspace);
+  if (!defineBlock) {
+    return false;
+  }
+  return Blockly.Procedures.blockContainsReturn(defineBlock);
+};
+
+/**
+ * @param {Blockly.Block} block The block
+ * @returns {boolean} True if the block contains a return block.
+ */
+Blockly.Procedures.blockContainsReturn = function(block) {
+  /** @type {Blockly.Block[]} */
+  var descendants = block.getDescendants();
+  for (var i = 0; i < descendants.length; i++) {
+    if (descendants[i].type === Blockly.PROCEDURES_RETURN_BLOCK_TYPE) {
+      return true;
+    }
+  }
+  return false;
+};
+
+/**
+ * If true, the user will be able to manually override the shape of procedure call blocks.
+ */
+Blockly.Procedures.USER_CAN_CHANGE_CALL_TYPE = false;
+
+/**
+ * If false, a round procedure call reporter can be dropped into any input, including boolean ones.
+ */
+Blockly.Procedures.ENFORCE_TYPES = false;
+
+/**
+ * @param {string} procCode The procedure code
+ * @param {Blockly.Workspace} workspace The workspace
+ * @returns {number} The type of the return block
+ */
+Blockly.Procedures.getProcedureReturnType = function(procCode, workspace) {
+  var defineBlock = Blockly.Procedures.getDefineBlock(procCode, workspace);
+  if (!defineBlock) {
+    return Blockly.PROCEDURES_CALL_TYPE_STATEMENT;
+  }
+  return Blockly.Procedures.getBlockReturnType(defineBlock);
+};
+
+/**
+ * @param {Blockly.Workspace} workspace The workspace
+ * @returns {Record<string, number>} The return type of each procedure in the workspace.
+ */
+Blockly.Procedures.getAllProcedureReturnTypes = function(workspace) {
+  var result = Object.create(null);
+  var blocks = workspace.getTopBlocks(false);
+  for (var i = 0; i < blocks.length; i++) {
+    var block = blocks[i];
+    if (block.type == Blockly.PROCEDURES_DEFINITION_BLOCK_TYPE && !block.isInsertionMarker()) {
+      var procCode = block.getInput('custom_block').connection.targetBlock().getProcCode();
+      // To match behavior of getDefineBlock, if multiple instances of this procedure are
+      // defined, only use the first one.
+      if (!Object.prototype.hasOwnProperty.call(result, procCode)) {
+        result[procCode] = Blockly.Procedures.getBlockReturnType(block);
+      }
+    }
+  }
+  return result;
+};
+
+/**
+ * @param {Blockly.Block} block The block
+ * @returns {number} The type of the return block
+ */
+Blockly.Procedures.getBlockReturnType = function(block) {
+  var hasSeenBooleanReturn = false;
+  /** @type {Blockly.Block[]} */
+  var descendants = block.getDescendants();
+  for (var i = 0; i < descendants.length; i++) {
+    if (descendants[i].type === Blockly.PROCEDURES_RETURN_BLOCK_TYPE) {
+      // The block at i + 1 should be the block inside of the return block.
+      // Even if the return block is missing its input, this will still be fine, because the
+      // next block should a stacked block which won't be hexagon-shaped.
+      if (i + 1 < descendants.length && descendants[i + 1].outputShape_ === Blockly.OUTPUT_SHAPE_HEXAGONAL) {
+        // keep searching, because there may be other, non-boolean returns in this function definition.
+        hasSeenBooleanReturn = true;
+      } else {
+        return Blockly.PROCEDURES_CALL_TYPE_REPORTER;
+      }
+    }
+  }
+  if (hasSeenBooleanReturn) {
+    return Blockly.PROCEDURES_CALL_TYPE_BOOLEAN;
+  } else {
+    return Blockly.PROCEDURES_CALL_TYPE_STATEMENT;
+  }
 };

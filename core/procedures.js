@@ -227,7 +227,7 @@ Blockly.Procedures.flyoutCategory = function(workspace) {
     '<block type="procedures_scriptvariable">' +
         '<value name="NAME">' +
             '<shadow type="argument_reporter_string_number">' +
-                '<field name="VALUE"/>' +
+                '<field name="VALUE">var</field>' +
             '</shadow>' +
         '</value>' +
     '</block></xml>';
@@ -487,7 +487,8 @@ Blockly.Procedures.editProcedureCallback_ = function(block) {
   );
 };
 
-Blockly.Procedures.makeArgumentSetter_ = function (block) {
+Blockly.Procedures.makeArgumentSetterCallback_ = function (block) {
+  var workspace = block.workspace;
   var newDom = Blockly.Xml.blockToDom(block);
   
   var blockText = '<xml>' +
@@ -505,7 +506,37 @@ Blockly.Procedures.makeArgumentSetter_ = function (block) {
     '</xml>';
   
   var newDom = Blockly.Xml.textToDom(blockText).firstChild;
-  var newBlock = Blockly.Xml.domToBlock(newDom, block.workspace);
+  Blockly.Events.setGroup(true);
+  var newBlock = Blockly.Xml.domToBlock(newDom, workspace);
+  
+  var scale = workspace.scale; // To convert from pixel units to workspace units
+  // Position the block so that it is at the top left of the visible workspace,
+  // padded from the edge by 30 units. Position in the top right if RTL.
+  var posX = -workspace.scrollX;
+  if (workspace.RTL) {
+    posX += workspace.getMetrics().contentWidth - 30;
+  } else {
+    posX += 30;
+  }
+  newBlock.moveBy(posX / scale, (-workspace.scrollY + 30) / scale);
+  newBlock.scheduleSnapAndBump();
+  Blockly.Events.setGroup(false);
+}
+
+Blockly.Procedures.editScriptVariableCallback_ = function (block) {
+  var target = block.getInput('NAME').connection.targetBlock();
+  var oldName = target.getFieldValue('VALUE');
+      
+  // Prompt the user to enter a name for the variable
+  Blockly.prompt(Blockly.Msg.RENAME_VARIABLE_TITLE, oldName,
+    function(newName) {
+      // In case user cancels.
+      if (newName.length === 0) { return; };
+      
+      
+      target.setFieldValue(newName, 'VALUE');
+      block.updateScriptVarReporterNames_(oldName, newName);
+    }, Blockly.Msg.RENAME_VARIABLE_MODAL_TITLE);
 }
 
 /**
@@ -562,7 +593,24 @@ Blockly.Procedures.makeSetOption = function(block) {
     enabled: true,
     text: Blockly.Msg.MAKE_ARGUMENT_SETTER,
     callback: function() {
-      Blockly.Procedures.makeArgumentSetter_(block);
+      Blockly.Procedures.makeArgumentSetterCallback_(block);
+    }
+  };
+  return editOption;
+};
+
+/**
+ * Make a context menu option for editing a script variable definition.
+ * @param {!Blockly.BlockSvg} block The block where the right-click originated.
+ * @return {!Object} A menu option, containing text, enabled, and a callback.
+ * @package
+ */
+Blockly.Procedures.makeEditScriptVarOption = function(block) {
+  var editOption = {
+    enabled: true,
+    text: Blockly.Msg.RENAME_VARIABLE,
+    callback: function() {
+      Blockly.Procedures.editScriptVariableCallback_(block);
     }
   };
   return editOption;

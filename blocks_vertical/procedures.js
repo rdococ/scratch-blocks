@@ -768,6 +768,47 @@ Blockly.ScratchBlocks.ProcedureUtils.updateArgumentReporterNames_ = function(pre
   }
 };
 
+/**
+ * Update argument reporter field values after an edit to the script variable definition shadow var.
+ * Be conservative and only update argument reporters that are used in the
+ * stack below the prototype, ie the definition.
+ * @param {!string} prevName The previous argument name.
+ * @param {!string} newName The new argument name.
+ * @this Blockly.Block
+ */
+Blockly.ScratchBlocks.ProcedureUtils.updateScriptVarReporterNames_ = function(prevName, newName) {
+  var nameChanges = [];
+  var argReporters = [];
+
+  // Create a list of argument reporters that are descendants of the definition stack (see above comment)
+  // This time, sort them by position, in case we stumble upon a later script var definition.
+  var allBlocks = this.getDescendants(true);
+  for (var i = 0; i < allBlocks.length; i++) {
+    var block = allBlocks[i];
+    if ((block.type === 'argument_reporter_string_number' ||
+        block.type === 'argument_reporter_boolean') && block.getParent() !== this) {
+      if (block.isShadow()) {
+        break; // We found it.
+      }
+      argReporters.push(block);
+    }
+  }
+  
+  nameChanges.push({
+    blocks: argReporters.filter(function(block) {
+      return block.getFieldValue('VALUE') == prevName;
+    })
+  });
+
+  // Finally update the blocks for each name change.
+  // Do this after creating the lists to avoid cycles of renaming.
+  for (var j = 0, nameChange; nameChange = nameChanges[j]; j++) {
+    for (var k = 0, block; block = nameChange.blocks[k]; k++) {
+      block.setFieldValue(newName, 'VALUE');
+    }
+  }
+};
+
 Blockly.Blocks['procedures_definition'] = {
   /**
    * Block for defining a procedure with no return value.
@@ -851,10 +892,8 @@ Blockly.Blocks['procedures_prototype'] = {
   populateArgument_: Blockly.ScratchBlocks.ProcedureUtils.populateArgumentOnPrototype_,
   addProcedureLabel_: Blockly.ScratchBlocks.ProcedureUtils.addLabelField_,
 
-  // Only exists on procedures_prototype and procedures_scriptvariable.
-  createArgumentReporter_: Blockly.ScratchBlocks.ProcedureUtils.createArgumentReporter_,
-  
   // Only exists on procedures_prototype.
+  createArgumentReporter_: Blockly.ScratchBlocks.ProcedureUtils.createArgumentReporter_,
   updateArgumentReporterNames_: Blockly.ScratchBlocks.ProcedureUtils.updateArgumentReporterNames_
 };
 
@@ -941,24 +980,11 @@ Blockly.Blocks['procedures_scriptvariable'] = {
           "name": "NAME"
         }
       ],
-      "extensions": ["colours_more", "shape_statement"]
+      "extensions": ["colours_more", "shape_statement", "scriptvar_def_contextmenu"]
     });
   },
-  // Shared.
-  /* removeAllInputs_: Blockly.ScratchBlocks.ProcedureUtils.removeAllInputs_,
-  disconnectOldBlocks_: Blockly.ScratchBlocks.ProcedureUtils.disconnectOldBlocks_,
-  deleteShadows_: Blockly.ScratchBlocks.ProcedureUtils.deleteShadows_,
-  createAllInputs_: Blockly.ScratchBlocks.ProcedureUtils.createAllInputs_,
-  updateDisplay_: Blockly.ScratchBlocks.ProcedureUtils.updateDisplay_, */
-
-  // Exist on all three blocks, but have different implementations.
-  /* mutationToDom: Blockly.ScratchBlocks.ProcedureUtils.definitionMutationToDom,
-  domToMutation: Blockly.ScratchBlocks.ProcedureUtils.definitionDomToMutation,
-  populateArgument_: Blockly.ScratchBlocks.ProcedureUtils.populateArgumentOnPrototype_,
-  addProcedureLabel_: Blockly.ScratchBlocks.ProcedureUtils.addLabelField_, */
-
-  // Only exists on procedures_prototype and procedures_scriptvariable.
-  createArgumentReporter_: Blockly.ScratchBlocks.ProcedureUtils.createArgumentReporter_
+  
+  updateScriptVarReporterNames_: Blockly.ScratchBlocks.ProcedureUtils.updateScriptVarReporterNames_
 };
 
 Blockly.Blocks['argument_setter'] = {

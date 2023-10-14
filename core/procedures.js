@@ -528,7 +528,7 @@ Blockly.Procedures.editScriptVariableCallback_ = function (block) {
   var oldName = target.getFieldValue('VALUE');
       
   // Prompt the user to enter a name for the variable
-  Blockly.prompt(Blockly.Msg.RENAME_VARIABLE_TITLE, oldName,
+  Blockly.prompt(Blockly.Msg.RENAME_SCRIPTVAR_TITLE, oldName,
     function(newName) {
       // In case user cancels.
       if (newName.length === 0) { return; };

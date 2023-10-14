@@ -263,6 +263,7 @@ Blockly.Msg["COLOUR_BRIGHTNESS_LABEL"] = "Brightness";
 Blockly.Msg["CHANGE_VALUE_TITLE"] = "Change value:";
 Blockly.Msg["RENAME_VARIABLE"] = "Rename variable";
 Blockly.Msg["RENAME_VARIABLE_TITLE"] = "Rename all \"%1\" variables to:";
+Blockly.Msg["RENAME_SCRIPTVAR_TITLE"] = "Rename script variable to:";
 Blockly.Msg["RENAME_VARIABLE_MODAL_TITLE"] = "Rename Variable";
 Blockly.Msg["NEW_VARIABLE"] = "Make a Variable";
 Blockly.Msg["NEW_VARIABLE_TITLE"] = "New variable name:";

@@ -304,6 +304,7 @@ Blockly.Msg.UNDO = 'Undo';
 Blockly.Msg.REDO = 'Redo';
 Blockly.Msg.EDIT_PROCEDURE = 'Edit';
 Blockly.Msg.MAKE_ARGUMENT_SETTER = 'Obtain setter';
+Blockly.Msg.RENAME_SCRIPTVAR_TITLE = 'Rename script variable to:';
 Blockly.Msg.SHOW_PROCEDURE_DEFINITION = 'Go to definition';
 Blockly.Msg.WORKSPACE_COMMENT_DEFAULT_TEXT = 'Say something...';
 

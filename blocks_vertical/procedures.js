@@ -732,12 +732,12 @@ Blockly.ScratchBlocks.ProcedureUtils.updateArgumentReporterNames_ = function(pre
   if (!definitionBlock) return;
 
   // Create a list of argument reporters that are descendants of the definition stack (see above comment)
-  var allBlocks = definitionBlock.getDescendants(false);
+  var allBlocks = definitionBlock.getDescendants(true);
   for (var i = 0; i < allBlocks.length; i++) {
     var block = allBlocks[i];
-    if ((block.type === 'argument_reporter_string_number' ||
-        block.type === 'argument_reporter_boolean') &&
-        !block.isShadow()) { // Exclude arg reporters in the prototype block, which are shadows.
+    if (block.setArgumentName_ !== undefined &&
+       ((block.type !== 'argument_reporter_string_number' &&
+         block.type !== 'argument_reporter_boolean') || block.getParent() !== this)) { // Exclude reporters in the prototype.
       argReporters.push(block);
     }
   }
@@ -753,7 +753,7 @@ Blockly.ScratchBlocks.ProcedureUtils.updateArgumentReporterNames_ = function(pre
       nameChanges.push({
         newName: this.displayNames_[i],
         blocks: argReporters.filter(function(block) {
-          return block.getFieldValue('VALUE') == prevName;
+          return block.getArgumentName_() == prevName;
         })
       });
     }
@@ -763,7 +763,10 @@ Blockly.ScratchBlocks.ProcedureUtils.updateArgumentReporterNames_ = function(pre
   // Do this after creating the lists to avoid cycles of renaming.
   for (var j = 0, nameChange; nameChange = nameChanges[j]; j++) {
     for (var k = 0, block; block = nameChange.blocks[k]; k++) {
-      block.setFieldValue(nameChange.newName, 'VALUE');
+      if (block.isShadow()) {
+        break; // Cancel this name change when a variable shadows this one
+      }
+      block.setArgumentName_(nameChange.newName);
     }
   }
 };
@@ -785,18 +788,18 @@ Blockly.ScratchBlocks.ProcedureUtils.updateScriptVarReporterNames_ = function(pr
   var allBlocks = this.getDescendants(true);
   for (var i = 0; i < allBlocks.length; i++) {
     var block = allBlocks[i];
-    if ((block.type === 'argument_reporter_string_number' ||
-        block.type === 'argument_reporter_boolean') && block.getParent() !== this) {
-      if (block.isShadow()) {
-        break; // We found it.
-      }
+    if (block.setArgumentName_ !== undefined &&
+      ((block.type !== 'argument_reporter_string_number' &&
+        block.type !== 'argument_reporter_boolean') || block.getParent() !== this)
+    ) {
       argReporters.push(block);
     }
   }
   
   nameChanges.push({
+    newName: newName,
     blocks: argReporters.filter(function(block) {
-      return block.getFieldValue('VALUE') == prevName;
+      return block.getArgumentName_() == prevName;
     })
   });
 
@@ -804,9 +807,26 @@ Blockly.ScratchBlocks.ProcedureUtils.updateScriptVarReporterNames_ = function(pr
   // Do this after creating the lists to avoid cycles of renaming.
   for (var j = 0, nameChange; nameChange = nameChanges[j]; j++) {
     for (var k = 0, block; block = nameChange.blocks[k]; k++) {
-      block.setFieldValue(newName, 'VALUE');
+      if (block.isShadow()) {
+        break; // Cancel this name change when a variable shadows this one
+      }
+      block.setArgumentName_(nameChange.newName);
     }
   }
+};
+
+Blockly.ScratchBlocks.ProcedureUtils.getArgumentReporterName_ = function () {
+  return this.getFieldValue('VALUE');
+};
+Blockly.ScratchBlocks.ProcedureUtils.setArgumentReporterName_ = function (name) {
+  this.setFieldValue(name, 'VALUE');
+};
+
+Blockly.ScratchBlocks.ProcedureUtils.getArgumentSetterName_ = function () {
+  return this.getFieldValue('NAME');
+};
+Blockly.ScratchBlocks.ProcedureUtils.setArgumentSetterName_ = function (name) {
+  this.setFieldValue(name, 'NAME');
 };
 
 Blockly.Blocks['procedures_definition'] = {
@@ -953,7 +973,11 @@ Blockly.Blocks['argument_reporter_boolean'] = {
       ],
       "extensions": ["colours_more", "output_boolean", "arg_reporter_contextmenu"]
     });
-  }
+  },
+  
+  // Implemented by argument_reporter and argument_setter.
+  setArgumentName_: Blockly.ScratchBlocks.ProcedureUtils.setArgumentReporterName_,
+  getArgumentName_: Blockly.ScratchBlocks.ProcedureUtils.getArgumentReporterName_
 };
 
 Blockly.Blocks['argument_reporter_string_number'] = {
@@ -968,7 +992,11 @@ Blockly.Blocks['argument_reporter_string_number'] = {
       ],
       "extensions": ["colours_more", "output_number", "output_string", "arg_reporter_contextmenu"]
     });
-  }
+  },
+  
+  // Implemented by argument_reporter and argument_setter.
+  setArgumentName_: Blockly.ScratchBlocks.ProcedureUtils.setArgumentReporterName_,
+  getArgumentName_: Blockly.ScratchBlocks.ProcedureUtils.getArgumentReporterName_
 };
 
 Blockly.Blocks['procedures_scriptvariable'] = {
@@ -1004,7 +1032,11 @@ Blockly.Blocks['argument_setter'] = {
       ],
       "extensions": ["colours_more", "shape_statement"]
     });
-  }
+  },
+  
+  // Implemented by argument_reporter and argument_setter.
+  setArgumentName_: Blockly.ScratchBlocks.ProcedureUtils.setArgumentSetterName_,
+  getArgumentName_: Blockly.ScratchBlocks.ProcedureUtils.getArgumentSetterName_
 };
 
 Blockly.Blocks['argument_editor_boolean'] = {

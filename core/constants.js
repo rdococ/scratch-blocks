@@ -402,7 +402,7 @@ Blockly.PROCEDURES_RETURN_BLOCK_TYPE = 'procedures_return';
  * The type of all script variable definition blocks.
  * @const {string}
  */
-Blockly.PROCEDURES_SCRIPTVAR_BLOCK_TYPE = 'procedures_scriptvariable';
+Blockly.PROCEDURES_SCRIPTVAR_BLOCK_TYPE = 'procedures_scriptvar_def';
 
 /**
  * ENUM for flyout status button states.

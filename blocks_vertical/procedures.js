@@ -871,7 +871,7 @@ Blockly.ScratchBlocks.ProcedureUtils.setArgumentSetterName_ = function (name) {
 Blockly.ScratchBlocks.ProcedureUtils.getArgumentOptions_ = function () {
   const array = Blockly.Procedures.getArgumentsInScope_(this).map((name) => [name, name]);
   if (array.length === 0) { array.push(["", ""]); };
-  array.unshift([Blockly.Msg.PROCEDURES_OTHER_SCRIPTVAR, () => Blockly.Procedures.changeScriptVariableCallback(this)]);
+  array.push([Blockly.Msg.PROCEDURES_OTHER_SCRIPTVAR, () => Blockly.Procedures.changeScriptVariableCallback(this)]);
   return array;
 }
 

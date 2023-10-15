@@ -222,7 +222,7 @@ Blockly.Procedures.flyoutCategory = function(workspace) {
   var xmlList = [];
   
   var scriptvarText = '<xml>' + 
-    '<block type="procedures_scriptvariable">' +
+    '<block type="procedures_scriptvar_def">' +
         '<value name="NAME">' +
             '<shadow type="argument_reporter_string_number">' +
                 '<field name="VALUE">var</field>' +
@@ -232,6 +232,33 @@ Blockly.Procedures.flyoutCategory = function(workspace) {
   
   var scriptvar = Blockly.Xml.textToDom(scriptvarText).firstChild;
   xmlList.push(scriptvar);
+  
+  var setScriptVarText = '<xml>' + 
+    '<block type="procedures_setscriptvarto">' +
+        '<field name="NAME">var</field>' +
+        '<value name="VALUE">' +
+            '<shadow type="text">' +
+                '<field name="TEXT">0</field>' +
+            '</shadow>' +
+        '</value>' +
+    '</block></xml>';
+  
+  var setScriptVar = Blockly.Xml.textToDom(setScriptVarText).firstChild;
+  xmlList.push(setScriptVar);
+  
+  var changeScriptVarText = '<xml>' + 
+    '<block type="procedures_changescriptvarby">' +
+        '<field name="NAME">var</field>' +
+        '<value name="VALUE">' +
+            '<shadow type="math_number">' +
+                '<field name="NUM">1</field>' +
+            '</shadow>' +
+        '</value>' +
+    '</block></xml>';
+  
+  var changeScriptVar = Blockly.Xml.textToDom(changeScriptVarText).firstChild;
+  xmlList.push(changeScriptVar);
+  
   
   var returnBlock = goog.dom.createDom('block');
   returnBlock.setAttribute('type', Blockly.PROCEDURES_RETURN_BLOCK_TYPE);
@@ -511,7 +538,7 @@ Blockly.Procedures.makeArgumentSetterCallback_ = function (block) {
   var newDom = Blockly.Xml.blockToDom(block);
   
   var blockText = '<xml>' +
-    '<block type="argument_setter">' +
+    '<block type="procedures_setscriptvarto">' +
         '<field name="NAME">' +
             newDom.firstChild.innerHTML +
         '</field>' +
@@ -547,7 +574,7 @@ Blockly.Procedures.editScriptVariableCallback_ = function (block) {
   var oldName = target.getFieldValue('VALUE');
       
   // Prompt the user to enter a name for the variable
-  Blockly.prompt(Blockly.Msg.RENAME_SCRIPTVAR_TITLE, oldName,
+  Blockly.prompt(Blockly.Msg.RENAME_SCRIPTVAR_TITLE.replace('%1', oldName), oldName,
     function(newName) {
       // In case user cancels.
       if (newName.length === 0) { return; };
@@ -555,6 +582,20 @@ Blockly.Procedures.editScriptVariableCallback_ = function (block) {
       
       target.setFieldValue(newName, 'VALUE');
       block.updateScriptVarReporterNames_(oldName, newName);
+    }, Blockly.Msg.RENAME_VARIABLE_MODAL_TITLE);
+}
+
+Blockly.Procedures.changeScriptVariableCallback = function (block) {
+  var oldName = block.getFieldValue('NAME');
+      
+  // Prompt the user to enter a name for the variable
+  Blockly.prompt(Blockly.Msg.CHANGE_SCRIPTVAR_TITLE, oldName,
+    function(newName) {
+      // In case user cancels.
+      if (newName.length === 0) { return; };
+      
+      
+      block.setFieldValue(newName, 'NAME');
     }, Blockly.Msg.RENAME_VARIABLE_MODAL_TITLE);
 }
 
@@ -707,6 +748,22 @@ Blockly.Procedures.deleteProcedureDefCallback = function(procCode,
   workspace.refreshToolboxSelection_();
 
   return true;
+};
+
+Blockly.Procedures.getArgumentsInScope_ = function(block) {
+  var root = block.getRootBlock();
+  var next = block.getNextBlock();
+  var blocks = root.getDescendants(true);
+  var argNames = [];
+  
+  for (var i = 0, candidate; candidate = blocks[i]; i++) {
+    if (candidate === next) { break; }
+    if (candidate.getArgumentName_ && !argNames.includes(candidate.getArgumentName_())) {
+      argNames.push(candidate.getArgumentName_());
+    }
+  }
+  
+  return argNames;
 };
 
 /**

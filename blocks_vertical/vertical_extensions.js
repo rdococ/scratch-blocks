@@ -214,25 +214,6 @@ Blockly.ScratchBlocks.VerticalExtensions.PROCEDURE_CALL_CONTEXTMENU = {
 };
 
 /**
- * Mixin to add a context menu for an argument reporter block.
- * It adds the "obtain setter" option.
- * @mixin
- * @augments Blockly.Block
- * @package
- * @readonly
- */
-Blockly.ScratchBlocks.VerticalExtensions.ARG_REPORTER_CONTEXTMENU = {
-  /**
-   * Add the "obtain setter" option to the context menu.
-   * @param {!Array.<!Object>} menuOptions List of menu options to edit.
-   * @this Blockly.Block
-   */
-  customContextMenu: function(menuOptions) {
-    menuOptions.push(Blockly.Procedures.makeSetOption(this));
-  }
-};
-
-/**
  * Mixin to add a context menu for a script variable definition.
  * It adds the "obtain setter" and "edit" options.
  * @mixin
@@ -247,7 +228,6 @@ Blockly.ScratchBlocks.VerticalExtensions.SCRIPTVAR_DEF_CONTEXTMENU = {
    * @this Blockly.Block
    */
   customContextMenu: function(menuOptions) {
-    menuOptions.push(Blockly.Procedures.makeSetOption(this));
     menuOptions.push(Blockly.Procedures.makeEditScriptVarOption(this));
   }
 };
@@ -296,8 +276,6 @@ Blockly.ScratchBlocks.VerticalExtensions.registerAll = function() {
       Blockly.ScratchBlocks.VerticalExtensions.PROCEDURE_DEF_CONTEXTMENU);
   Blockly.Extensions.registerMixin('procedure_call_contextmenu',
       Blockly.ScratchBlocks.VerticalExtensions.PROCEDURE_CALL_CONTEXTMENU);
-  Blockly.Extensions.registerMixin('arg_reporter_contextmenu',
-      Blockly.ScratchBlocks.VerticalExtensions.ARG_REPORTER_CONTEXTMENU);
   Blockly.Extensions.registerMixin('scriptvar_def_contextmenu',
       Blockly.ScratchBlocks.VerticalExtensions.SCRIPTVAR_DEF_CONTEXTMENU);
 

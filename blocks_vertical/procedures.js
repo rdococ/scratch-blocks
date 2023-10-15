@@ -868,6 +868,13 @@ Blockly.ScratchBlocks.ProcedureUtils.setArgumentSetterName_ = function (name) {
   this.setFieldValue(name, 'NAME');
 };
 
+Blockly.ScratchBlocks.ProcedureUtils.getArgumentOptions_ = function () {
+  const array = Blockly.Procedures.getArgumentsInScope_(this).map((name) => [name, name]);
+  if (array.length === 0) { array.push(["", ""]); };
+  array.unshift([Blockly.Msg.PROCEDURES_OTHER_SCRIPTVAR, () => Blockly.Procedures.changeScriptVariableCallback(this)]);
+  return array;
+}
+
 Blockly.Blocks['procedures_definition'] = {
   /**
    * Block for defining a procedure with no return value.
@@ -1011,11 +1018,11 @@ Blockly.Blocks['argument_reporter_boolean'] = {
           "text": ""
         }
       ],
-      "extensions": ["colours_more", "output_boolean", "arg_reporter_contextmenu"]
+      "extensions": ["colours_more", "output_boolean"]
     });
   },
   
-  // Implemented by argument_reporter and argument_setter.
+  // Implemented by argument_reporter and procedures_setscriptvarto.
   setArgumentName_: Blockly.ScratchBlocks.ProcedureUtils.setArgumentReporterName_,
   getArgumentName_: Blockly.ScratchBlocks.ProcedureUtils.getArgumentReporterName_
 };
@@ -1030,16 +1037,16 @@ Blockly.Blocks['argument_reporter_string_number'] = {
           "text": ""
         }
       ],
-      "extensions": ["colours_more", "output_number", "output_string", "arg_reporter_contextmenu"]
+      "extensions": ["colours_more", "output_number", "output_string"]
     });
   },
   
-  // Implemented by argument_reporter and argument_setter.
+  // Implemented by argument_reporter and procedures_setscriptvarto.
   setArgumentName_: Blockly.ScratchBlocks.ProcedureUtils.setArgumentReporterName_,
   getArgumentName_: Blockly.ScratchBlocks.ProcedureUtils.getArgumentReporterName_
 };
 
-Blockly.Blocks['procedures_scriptvariable'] = {
+Blockly.Blocks['procedures_scriptvar_def'] = {
   init: function() {
     this.jsonInit({ "message0": "script variable %1",
       "args0": [
@@ -1055,28 +1062,56 @@ Blockly.Blocks['procedures_scriptvariable'] = {
   updateScriptVarReporterNames_: Blockly.ScratchBlocks.ProcedureUtils.updateScriptVarReporterNames_
 };
 
-Blockly.Blocks['argument_setter'] = {
+Blockly.Blocks['procedures_setscriptvarto'] = {
   init: function() {
     this.jsonInit({ "message0": "set %1 to %2",
       "args0": [
         {
-          "type": "field_label_serializable",
+          "type": "field_dropdown",
           "name": "NAME",
-          "text": ""
+          "options": () => this.getArgumentOptions_()
         },
         {
           "type": "input_value",
-          "name": "VALUE",
-          "text": "0"
+          "name": "VALUE"
         }
       ],
       "extensions": ["colours_more", "shape_statement"]
     });
   },
   
-  // Implemented by argument_reporter and argument_setter.
+  // Implemented by argument_reporter and procedures_setscriptvarto.
   setArgumentName_: Blockly.ScratchBlocks.ProcedureUtils.setArgumentSetterName_,
-  getArgumentName_: Blockly.ScratchBlocks.ProcedureUtils.getArgumentSetterName_
+  getArgumentName_: Blockly.ScratchBlocks.ProcedureUtils.getArgumentSetterName_,
+  
+  // Implemented by procedures_setscriptvarto only.
+  getArgumentOptions_: Blockly.ScratchBlocks.ProcedureUtils.getArgumentOptions_
+};
+
+Blockly.Blocks['procedures_changescriptvarby'] = {
+  init: function() {
+    this.jsonInit({ "message0": "change %1 by %2",
+      "args0": [
+        {
+          "type": "field_dropdown",
+          "name": "NAME",
+          "options": () => this.getArgumentOptions_()
+        },
+        {
+          "type": "input_value",
+          "name": "VALUE"
+        }
+      ],
+      "extensions": ["colours_more", "shape_statement"]
+    });
+  },
+  
+  // Implemented by argument_reporter and procedures_setscriptvarto.
+  setArgumentName_: Blockly.ScratchBlocks.ProcedureUtils.setArgumentSetterName_,
+  getArgumentName_: Blockly.ScratchBlocks.ProcedureUtils.getArgumentSetterName_,
+  
+  // Implemented by procedures_setscriptvarto only.
+  getArgumentOptions_: Blockly.ScratchBlocks.ProcedureUtils.getArgumentOptions_
 };
 
 Blockly.Blocks['argument_editor_boolean'] = {
